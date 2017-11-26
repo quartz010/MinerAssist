@@ -183,6 +183,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CMineDect.h" />
     <ClInclude Include="MinerAssist.h" />
     <ClInclude Include="MinerAssistDlg.h" />
     <ClInclude Include="resource.h" />
@@ -190,6 +191,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CMineDect.cpp" />
     <ClCompile Include="MinerAssist.cpp" />
     <ClCompile Include="MinerAssistDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
