@@ -4,11 +4,12 @@ class CMineDect
 public:
 	CMineDect();
 	~CMineDect();
+
 	
 	
 	
 	
-	HANDLE OpenProc();
+	HANDLE OpenProc(LPWSTR mineTitle);
 	BOOL GetWndSize();
 	DWORD DectMine();
 

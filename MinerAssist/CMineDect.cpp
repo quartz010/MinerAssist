@@ -11,9 +11,9 @@ CMineDect::~CMineDect()
 {
 }
 
-HANDLE CMineDect::OpenProc()
+HANDLE CMineDect::OpenProc(LPWSTR mineTitle)
 {
-	m_hWndMine = ::FindWindow(NULL, _T("É¨À×"));
+	m_hWndMine = ::FindWindow(NULL, mineTitle);
 
 	DWORD procId;
 	::GetWindowThreadProcessId(m_hWndMine, &procId);

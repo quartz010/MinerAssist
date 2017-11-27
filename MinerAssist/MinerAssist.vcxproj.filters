@@ -46,7 +46,7 @@
       <Filter>UI\Header</Filter>
     </ClInclude>
     <ClInclude Include="CMineDect.h">
-      <Filter>Common\头文件</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -60,7 +60,7 @@
       <Filter>UI\Source</Filter>
     </ClCompile>
     <ClCompile Include="CMineDect.cpp">
-      <Filter>Common\源文件</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
