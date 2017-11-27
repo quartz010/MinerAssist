@@ -1,11 +1,11 @@
 #include "stdafx.h"
 #include "CMineDect.h"
+#include "MinerAssistDlg.h"
 
 
 CMineDect::CMineDect()
 {
 }
-
 
 CMineDect::~CMineDect()
 {
@@ -33,8 +33,14 @@ BOOL CMineDect::GetWndSize()
 	::ReadProcessMemory(m_hProcMine, (LPCVOID)m_offsetx, &m_sizex, 1, NULL);    //获取横向方格长度
 	::ReadProcessMemory(m_hProcMine, (LPCVOID)m_offsety, &m_sizey, 1, NULL);    //获取纵向方格长度
 
+
 	TRACE("[*] Got wnd size %d x %d\n", m_sizex, m_sizey);
 
+	//发送消息
+	CString info;
+	wsprintf(info.GetBuffer(), L"Get field size %d x %d", m_sizex, m_sizey);
+
+	::SendMessage(::AfxGetMainWnd()->m_hWnd, WM_MYMSG, (WPARAM)info.GetBuffer(), 0);
 	return 0;
 }
 
@@ -45,6 +51,7 @@ DWORD CMineDect::DectMine()
 	WORD currBlock;
 	const WORD flagBlock = 0x8E;
 
+	
 	for (DWORD i = 0; i < m_sizex * 32; i += 32)
 	{
 		for (DWORD j = 0; j < m_sizey; j++)
