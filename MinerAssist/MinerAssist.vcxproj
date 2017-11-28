@@ -208,6 +208,7 @@
     <None Include="res\MinerAssist.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\icon1.ico" />
     <Image Include="res\MinerAssist.ico" />
     <Image Include="res\Toolbar.bmp" />
     <Image Include="res\Toolbar256.bmp" />

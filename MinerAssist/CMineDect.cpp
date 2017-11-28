@@ -35,36 +35,54 @@ BOOL CMineDect::GetWndSize()
 
 
 	TRACE("[*] Got wnd size %d x %d\n", m_sizex, m_sizey);
+	
+	WCHAR info[128];
+	wsprintf(info, L"[*] Get field size %d x %d", m_sizex, m_sizey);
+	UpdateDbgInfo(info);
+	
 
-	//发送消息
-	CString info;
-	wsprintf(info.GetBuffer(), L"Get field size %d x %d", m_sizex, m_sizey);
-
-	::SendMessage(::AfxGetMainWnd()->m_hWnd, WM_MYMSG, (WPARAM)info.GetBuffer(), 0);
 	return 0;
+}
+
+DWORD CMineDect::UpdateDbgInfo(LPWSTR info)
+{	
+	//发送消息
+
+	//MessageBoxA(NULL, info, "none", NULL);
+	return(::SendMessage(::AfxGetMainWnd()->m_hWnd, WM_MYMSG, (WPARAM)info, 0));
+
 }
 
 DWORD CMineDect::DectMine()
 {
-	//这里由逆向分析得出 一个循环是32
 	
-	WORD currBlock;
-	const WORD flagBlock = 0x8E;
+	//一个格子的数据
+	BYTE mineNum = 0;
+	BYTE currBlock;
+	const BYTE flagBlock = 0x8E;
 
-	
-	for (DWORD i = 0; i < m_sizex * 32; i += 32)
+
+	//这里遍历雷区大小
+	//这里由逆向分析得出 一个循环是32
+	for (DWORD i = 0; i < m_sizey * 32; i += 32)
 	{
-		for (DWORD j = 0; j < m_sizey; j++)
+		for (DWORD j = 0; j < m_sizex; j++)
 		{
 			::ReadProcessMemory(m_hProcMine, (LPCVOID)(m_offsetaddr + i + j), &currBlock, 1, NULL);
 			
 			if (currBlock == 0x8F)       //判断是否有雷
 			{
 				//如果有雷就画上小红旗
+				mineNum++;
+
 				::WriteProcessMemory(m_hProcMine, (LPVOID)(m_offsetaddr + i + j), &flagBlock, 1, NULL);
 			}
 		}
 	}
+	WCHAR info[128];
+
+	wsprintf(info, L"[*] Find mine number : %d ", mineNum);
+	UpdateDbgInfo(info);
 
 	::InvalidateRect(m_hWndMine, NULL, TRUE);
 	::CloseHandle(m_hProcMine);

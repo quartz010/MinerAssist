@@ -15,6 +15,10 @@ public:
 
 private:
 	
+	DWORD UpdateDbgInfo(LPWSTR info);
+	//DWORD UpdateDbgInfo(const WCHAR * fmt, ...);
+	
+	
 	HANDLE m_hProcMine;
 	HWND m_hWndMine;
 
