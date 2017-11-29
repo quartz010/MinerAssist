@@ -19,19 +19,22 @@ HANDLE CMineDect::OpenProc(LPWSTR mineTitle)
 	
 	m_hProcMine = NULL;
 
+	//找扫雷窗口
 	if (NULL != (m_hWndMine = ::FindWindow(NULL, mineTitle)))
 	{
+		//根据窗口句柄找主线程(进程)
 		::GetWindowThreadProcessId(m_hWndMine, &procId);
 		
 		wsprintf(info, L"[*] Find mine Proc PID : %d", procId);
 		UpdateDbgInfo(info);
 		
+		//打开进程句柄
 		HANDLE Process = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, procId);
 		m_hProcMine = Process;
 	}
 	else
 	{
-		wsprintf(info, L"[-] Find mine Proc Failed (IS THERE A WINMINE??)");
+		wsprintf(info, L"[-] Find mine Proc Failed (IS THERE REALLY A WINMINE??)");
 		UpdateDbgInfo(info);
 	}
 	
@@ -42,8 +45,7 @@ HANDLE CMineDect::OpenProc(LPWSTR mineTitle)
 BOOL CMineDect::GetWndSize()
 {
 
-	int b = 0, s = 0, nx = 0, ny = 0;
-
+	//读内存偏移
 	::ReadProcessMemory(m_hProcMine, (LPCVOID)m_offsetx, &m_sizex, 1, NULL);    //获取横向方格长度
 	::ReadProcessMemory(m_hProcMine, (LPCVOID)m_offsety, &m_sizey, 1, NULL);    //获取纵向方格长度
 
@@ -104,8 +106,15 @@ DWORD CMineDect::SetFlag()
 		}
 	}
 	WCHAR info[128];
+	if (mineNum > 0)
+	{
+		wsprintf(info, L"[*] Find mine number : %d ", mineNum);
 
-	wsprintf(info, L"[*] Find mine number : %d ", mineNum);
+	}
+	else
+	{
+		wsprintf(info, L"[!] No mine Remained  ");
+	}
 	UpdateDbgInfo(info);
 
 	::InvalidateRect(m_hWndMine, NULL, TRUE);
@@ -141,3 +150,26 @@ DWORD CMineDect::SweepMine()
 
 }
 
+DWORD CMineDect::UnInject() 
+{
+	
+	DWORD procId;
+	//这里获取 扫雷 进程的pid
+	::GetWindowThreadProcessId(m_hWndMine, &procId);
+
+	if (!UnloadDll(procId))
+	{
+		WCHAR info[128];
+		errno = GetLastError();
+		wsprintf(info, L"[-] Unload module Proc Failed : %d", errno);
+		UpdateDbgInfo(info);
+	}
+	else
+	{
+		WCHAR info[128];
+		errno = GetLastError();
+		wsprintf(info, L"[+] Unload module Proc Successfully : %d", errno);
+		UpdateDbgInfo(info);
+	}
+	return 0;
+}

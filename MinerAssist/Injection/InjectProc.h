@@ -10,3 +10,6 @@ DWORD GetProcID(TCHAR szProcName[]);
 
 // 提升当前进程权限
 int EnableDebugPriv(TCHAR szName[]);
+
+BOOL UnloadDll(DWORD dwRemoteProcessID);
+

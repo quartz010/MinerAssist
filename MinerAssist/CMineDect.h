@@ -17,6 +17,10 @@ public:
 	//ÅÅÀ×
 	DWORD SweepMine();
 
+	DWORD UnInject();
+
+	
+
 private:
 	
 	DWORD UpdateDbgInfo(LPWSTR info);

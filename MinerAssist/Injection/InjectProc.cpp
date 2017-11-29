@@ -144,3 +144,62 @@ int EnableDebugPriv(TCHAR szName[])
 
 	return 1;
 }
+
+/////////////////////////////////////////////////////////////////
+// 卸载已加载模块
+
+BOOL UnloadDll(DWORD dwRemoteProcessID)
+{
+	HANDLE hRemoteProcess;
+
+	if (EnableDebugPriv(SE_DEBUG_NAME) == 0)
+	{
+		return FALSE;
+	}
+
+	// 打开远程线程
+	if ((hRemoteProcess = OpenProcess(PROCESS_CREATE_THREAD |
+		PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, dwRemoteProcessID)) ==
+		NULL)
+	{
+		return FALSE;
+	}
+	HANDLE  hmod;
+	if (NULL == (hmod = (HANDLE)GetModuleHandle(TEXT("AssistDll"))))
+	{	
+		MessageBox(GetDesktopWindow(), L"Failed 2", L"info", MB_OK);
+		return FALSE;
+	}
+
+
+	
+	PTHREAD_START_ROUTINE  pfnStartAddr = (PTHREAD_START_ROUTINE)
+		GetProcAddress(GetModuleHandle(TEXT("kernel32")), "FreeLibrary");
+	
+	if (pfnStartAddr == NULL)
+	{
+		MessageBox(GetDesktopWindow(), L"Failed 3", L"info", MB_OK);
+		return FALSE;
+	}
+	
+
+
+	// 通过建立远程连接的地址:pfnStartAddr
+	// 传递参数 pszLibFileRemote 远程启动DLL
+	// 启动远程线程 LoadLibraryW 通过远程线程调用用户的DLL文件
+
+	HANDLE hRemoteThread;
+	if ((hRemoteThread =
+		CreateRemoteThread(hRemoteProcess, NULL, 0, pfnStartAddr, hmod, 0, NULL))
+		== NULL)
+	{
+		TCHAR errNO[16];
+
+		//CreateRemoteThread(hRemoteProcess, NULL, 0, pfnStartAddr, NULL, 0, NULL);
+
+		wsprintf(errNO, L"%d", GetLastError());
+		MessageBox(GetDesktopWindow(), L"Failed 4", L"info", MB_OK);
+		return FALSE;
+	}
+	return TRUE;
+}
