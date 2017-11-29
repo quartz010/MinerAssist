@@ -184,6 +184,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CMineDect.h" />
+    <ClInclude Include="Injection\InjectProc.h" />
     <ClInclude Include="MinerAssist.h" />
     <ClInclude Include="MinerAssistDlg.h" />
     <ClInclude Include="resource.h" />
@@ -192,6 +193,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CMineDect.cpp" />
+    <ClCompile Include="Injection\InjectProc.cpp" />
     <ClCompile Include="MinerAssist.cpp" />
     <ClCompile Include="MinerAssistDlg.cpp" />
     <ClCompile Include="stdafx.cpp">

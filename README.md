@@ -8,6 +8,6 @@
 ## 说明
 
 - 本软件发布执行 MIT 协议
-- 此版本只适用于 XP 版本扫雷 下载扫雷 
+- 此版本只适用于 XP 版本扫雷 [下载扫雷](https://raw.githubusercontent.com/quartz010/MinerAssist/master/WniMine/winmine.exe) 
 
 

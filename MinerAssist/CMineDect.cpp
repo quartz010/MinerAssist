@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "CMineDect.h"
 #include "MinerAssistDlg.h"
-
+#include "Injection/InjectProc.h"
 
 CMineDect::CMineDect()
 {
@@ -12,15 +12,29 @@ CMineDect::~CMineDect()
 }
 
 HANDLE CMineDect::OpenProc(LPWSTR mineTitle)
-{
-	m_hWndMine = ::FindWindow(NULL, mineTitle);
 
+{
 	DWORD procId;
-	::GetWindowThreadProcessId(m_hWndMine, &procId);
+	WCHAR info[128];
 	
-	HANDLE Process = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, procId);
+	m_hProcMine = NULL;
+
+	if (NULL != (m_hWndMine = ::FindWindow(NULL, mineTitle)))
+	{
+		::GetWindowThreadProcessId(m_hWndMine, &procId);
+		
+		wsprintf(info, L"[*] Find mine Proc PID : %d", procId);
+		UpdateDbgInfo(info);
+		
+		HANDLE Process = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, procId);
+		m_hProcMine = Process;
+	}
+	else
+	{
+		wsprintf(info, L"[-] Find mine Proc Failed (IS THERE A WINMINE??)");
+		UpdateDbgInfo(info);
+	}
 	
-	m_hProcMine = Process;
 	return m_hProcMine;
 
 }
@@ -37,11 +51,21 @@ BOOL CMineDect::GetWndSize()
 	TRACE("[*] Got wnd size %d x %d\n", m_sizex, m_sizey);
 	
 	WCHAR info[128];
-	wsprintf(info, L"[*] Get field size %d x %d", m_sizex, m_sizey);
-	UpdateDbgInfo(info);
+	//wsprintf(info, L"[*] Get field size %x x %x", m_offsetx, m_offsety);
 	
+	wsprintf(info, L"[*] Get field size %d x %d ", m_sizex, m_sizey);
+	UpdateDbgInfo(info);
 
-	return 0;
+	//检测雷区大小是否合理(愚蠢的办法)
+	if (m_sizex < 0 || m_sizey < 0 || m_sizex > 100 || m_sizey >100)
+	{
+		
+		wsprintf(info, L"[-] Get filed size Failed ");
+		UpdateDbgInfo(info);
+		return FALSE;
+	}
+
+	return TRUE;
 }
 
 DWORD CMineDect::UpdateDbgInfo(LPWSTR info)
@@ -52,8 +76,8 @@ DWORD CMineDect::UpdateDbgInfo(LPWSTR info)
 	return(::SendMessage(::AfxGetMainWnd()->m_hWnd, WM_MYMSG, (WPARAM)info, 0));
 
 }
-
-DWORD CMineDect::DectMine()
+//查雷, 立旗子
+DWORD CMineDect::SetFlag()
 {
 	
 	//一个格子的数据
@@ -87,6 +111,33 @@ DWORD CMineDect::DectMine()
 	::InvalidateRect(m_hWndMine, NULL, TRUE);
 	::CloseHandle(m_hProcMine);
 
+	return mineNum;
+}
+//排雷,
+DWORD CMineDect::SweepMine()
+{
+	//for dbg
+	LPWSTR szBuffer = _T("G:\\Documents\\Visual Studio 2017\\Projects\\MinerAssist\\Debug\\AssistDll.dll");
+
+	DWORD procId;
+	//这里获取 扫雷 进程的pid
+	::GetWindowThreadProcessId(m_hWndMine, &procId);
+
+	if (!InjectDll(szBuffer, procId))
+	{
+		WCHAR info[128];
+		errno = GetLastError();
+		wsprintf(info, L"[-] Inject mine Proc Failed : %d", errno);
+		UpdateDbgInfo(info);
+	}
+	else
+	{
+		WCHAR info[128];
+		errno = GetLastError();
+		wsprintf(info, L"[+] Inject mine Proc Successfully : %d", errno);
+		UpdateDbgInfo(info);
+	}
 	return 0;
+
 }
 

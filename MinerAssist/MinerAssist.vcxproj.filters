@@ -28,6 +28,9 @@
     <Filter Include="Core">
       <UniqueIdentifier>{58c0367f-ab5f-4e9c-9206-70c46648368f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Inject">
+      <UniqueIdentifier>{df2ef208-fdc1-4095-87c8-500eec8cfe6c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -48,6 +51,9 @@
     <ClInclude Include="CMineDect.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="Injection\InjectProc.h">
+      <Filter>Inject</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -61,6 +67,9 @@
     </ClCompile>
     <ClCompile Include="CMineDect.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Injection\InjectProc.cpp">
+      <Filter>Inject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

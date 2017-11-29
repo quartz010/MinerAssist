@@ -11,14 +11,17 @@ public:
 	
 	HANDLE OpenProc(LPWSTR mineTitle);
 	BOOL GetWndSize();
-	DWORD DectMine();
+	//DWORD DectMine();
+	//²éÀ×
+	DWORD SetFlag();
+	//ÅÅÀ×
+	DWORD SweepMine();
 
 private:
 	
 	DWORD UpdateDbgInfo(LPWSTR info);
 	//DWORD UpdateDbgInfo(const WCHAR * fmt, ...);
-	
-	
+
 	HANDLE m_hProcMine;
 	HWND m_hWndMine;
 
