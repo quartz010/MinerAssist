@@ -16,7 +16,7 @@ HANDLE CMineDect::OpenProc(LPWSTR mineTitle)
 {
 	DWORD procId;
 	WCHAR info[128];
-	
+
 	m_hProcMine = NULL;
 
 	//找扫雷窗口
@@ -24,10 +24,10 @@ HANDLE CMineDect::OpenProc(LPWSTR mineTitle)
 	{
 		//根据窗口句柄找主线程(进程)
 		::GetWindowThreadProcessId(m_hWndMine, &procId);
-		
+
 		wsprintf(info, L"[*] Find mine Proc PID : %d", procId);
 		UpdateDbgInfo(info);
-		
+
 		//打开进程句柄
 		HANDLE Process = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, procId);
 		m_hProcMine = Process;
@@ -37,24 +37,21 @@ HANDLE CMineDect::OpenProc(LPWSTR mineTitle)
 		wsprintf(info, L"[-] Find mine Proc Failed (IS THERE REALLY A WINMINE??)");
 		UpdateDbgInfo(info);
 	}
-	
-	return m_hProcMine;
 
+	return m_hProcMine;
 }
 
 BOOL CMineDect::GetWndSize()
 {
-
 	//读内存偏移
 	::ReadProcessMemory(m_hProcMine, (LPCVOID)m_offsetx, &m_sizex, 1, NULL);    //获取横向方格长度
 	::ReadProcessMemory(m_hProcMine, (LPCVOID)m_offsety, &m_sizey, 1, NULL);    //获取纵向方格长度
 
-
 	TRACE("[*] Got wnd size %d x %d\n", m_sizex, m_sizey);
-	
+
 	WCHAR info[128];
 	//wsprintf(info, L"[*] Get field size %x x %x", m_offsetx, m_offsety);
-	
+
 	wsprintf(info, L"[*] Get field size %d x %d ", m_sizex, m_sizey);
 	UpdateDbgInfo(info);
 
@@ -69,23 +66,14 @@ BOOL CMineDect::GetWndSize()
 	return TRUE;
 }
 
-DWORD CMineDect::UpdateDbgInfo(LPWSTR info)
-{	
-	//发送消息
 
-	//MessageBoxA(NULL, info, "none", NULL);
-	return(::SendMessage(::AfxGetMainWnd()->m_hWnd, WM_MYMSG, (WPARAM)info, 0));
-
-}
 //查雷, 立旗子
 DWORD CMineDect::SetFlag()
 {
-	
 	//一个格子的数据
 	BYTE mineNum = 0;
 	BYTE currBlock;
 	const BYTE flagBlock = 0x8E;
-
 
 	//这里遍历雷区大小
 	//这里由逆向分析得出 一个循环是32
@@ -94,7 +82,7 @@ DWORD CMineDect::SetFlag()
 		for (DWORD j = 0; j < m_sizex; j++)
 		{
 			::ReadProcessMemory(m_hProcMine, (LPCVOID)(m_offsetaddr + i + j), &currBlock, 1, NULL);
-			
+
 			if (currBlock == 0x8F)       //判断是否有雷
 			{
 				//如果有雷就画上小红旗
@@ -108,7 +96,6 @@ DWORD CMineDect::SetFlag()
 	if (mineNum > 0)
 	{
 		wsprintf(info, L"[*] Find mine number : %d ", mineNum);
-
 	}
 	else
 	{
@@ -143,14 +130,94 @@ DWORD CMineDect::SweepMine()
 		WCHAR info[128];
 		wsprintf(info, L"[+] Inject mine Proc Successfully ");
 		UpdateDbgInfo(info);
+		//下面等待 IPC 的消息
+
+		CString lpPipeName = L"\\\\.\\Pipe\\NamedPipe";
+
+		// 创建管道实例 实现与注入进程的IPC
+		HANDLE hPipe = CreateNamedPipe(lpPipeName, PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, \
+			PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, 1, 0, 0, 1000, NULL);
+		if (hPipe == INVALID_HANDLE_VALUE)
+		{
+			DWORD dwErrorCode = GetLastError();
+			wsprintf(info, L"[-] Create Pipe Failed : %d", dwErrorCode);
+			UpdateDbgInfo(info);
+
+			return -1;
+		}
+		else
+		{
+			wsprintf(info, L"[*] Create Pipe Successfully! waiting for IPC ");
+			UpdateDbgInfo(info);
+			//创建读管道线程
+			//CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadIPC, hPipe, 0, NULL);
+			ThreadIPC(hPipe);
+		}
 	}
 	return 0;
-
 }
 
-DWORD CMineDect::UnInject() 
+
+
+DWORD CMineDect::ThreadIPC(LPVOID lpParameter)
 {
+	WCHAR info[128];
+
+	DWORD  nReadByte = 0, nWriteByte = 0, dwByte = 0;
+	WCHAR  szBuf[64];
+	DWORD ReadNum = 64;
+
+	HANDLE hPipe = (HANDLE)lpParameter;
+
+	wsprintf(info, L"[+] Create Listening Thread Successfully");
+	UpdateDbgInfo(info);
+
+	//if (ConnectNamedPipe(hPipe, NULL) == FALSE) // 等待客户机的连接
+	//{
+	//	errno = GetLastError();
+	//	wsprintf(info, L"[!] Connect Pipe Failed, exiting... : %d", errno);
+	//	UpdateDbgInfo(info);
+	//	goto exit;
+	//}
+	//else
+	//{
+	//	wsprintf(info, L"[+] Connected!");
+	//	UpdateDbgInfo(info);
+	//}
 	
+	// 从管道读取数据
+	if (ReadFile(hPipe, szBuf, sizeof(szBuf), &ReadNum, NULL) == FALSE)
+	{
+		errno = GetLastError();
+		wsprintf(info, L"[!] Read Pipe Failed, exiting... : %d", errno);
+		UpdateDbgInfo(info);
+		goto exit;
+	}
+	else
+	{
+		szBuf[ReadNum] = _T('\0'); // 显示接收到的信息
+		
+		wsprintf(info, L"[*] From IPC : %s , %d", szBuf, ReadNum);
+		UpdateDbgInfo(info);
+	}
+	
+exit:
+	CloseHandle(hPipe); // 关闭管道句柄
+	return 0;
+}
+
+DWORD CMineDect::UpdateDbgInfo(LPWSTR info)
+{
+	//发送消息
+
+	//MessageBoxA(NULL, info, "none", NULL);
+	return(::SendMessage(::AfxGetMainWnd()->m_hWnd, WM_MYMSG, (WPARAM)info, 0));
+}
+
+
+// reserve
+DWORD CMineDect::UnInject()
+{
 	DWORD procId;
 	//这里获取 扫雷 进程的pid
 	::GetWindowThreadProcessId(m_hWndMine, &procId);
@@ -171,3 +238,4 @@ DWORD CMineDect::UnInject()
 	}
 	return 0;
 }
+

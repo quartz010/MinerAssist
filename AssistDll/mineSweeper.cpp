@@ -32,8 +32,8 @@ DWORD ScanFiled()
 
 			if (currBlock != 0x8E && currBlock != 0x8F)       //判断是否有旗子 
 			{												//有雷有旗子 = 8E
-				
-				Sleep(10);
+				//不要太快对吧 这样才有优化空间
+				//Sleep(10);
 				Click(i/32 + 1 , j+1);
 	
 			}

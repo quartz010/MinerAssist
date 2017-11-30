@@ -196,7 +196,7 @@ BOOL UnloadDll(DWORD dwRemoteProcessID)
 		TCHAR errNO[16];
 
 		//CreateRemoteThread(hRemoteProcess, NULL, 0, pfnStartAddr, NULL, 0, NULL);
-
+		WaitForSingleObject(hRemoteThread, 1000);
 		wsprintf(errNO, L"%d", GetLastError());
 		MessageBox(GetDesktopWindow(), L"Failed 4", L"info", MB_OK);
 		return FALSE;

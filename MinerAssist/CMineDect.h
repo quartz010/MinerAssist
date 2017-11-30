@@ -19,11 +19,13 @@ public:
 
 	DWORD UnInject();
 
+
 	
 
 private:
-	
-	DWORD UpdateDbgInfo(LPWSTR info);
+
+	static DWORD ThreadIPC(LPVOID lpParameter);
+	static DWORD UpdateDbgInfo(LPWSTR info);
 	//DWORD UpdateDbgInfo(const WCHAR * fmt, ...);
 
 	HANDLE m_hProcMine;
