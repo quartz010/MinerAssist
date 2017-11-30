@@ -61,7 +61,6 @@ BOOL CMineDect::GetWndSize()
 	//检测雷区大小是否合理(愚蠢的办法)
 	if (m_sizex < 0 || m_sizey < 0 || m_sizex > 100 || m_sizey >100)
 	{
-		
 		wsprintf(info, L"[-] Get filed size Failed ");
 		UpdateDbgInfo(info);
 		return FALSE;
@@ -142,8 +141,7 @@ DWORD CMineDect::SweepMine()
 	else
 	{
 		WCHAR info[128];
-		errno = GetLastError();
-		wsprintf(info, L"[+] Inject mine Proc Successfully : %d", errno);
+		wsprintf(info, L"[+] Inject mine Proc Successfully ");
 		UpdateDbgInfo(info);
 	}
 	return 0;
