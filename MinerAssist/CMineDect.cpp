@@ -6,6 +6,7 @@
 
 CMineDect::CMineDect()
 {
+	m_ipc = new C_IPC;
 }
 
 CMineDect::~CMineDect()
@@ -13,7 +14,6 @@ CMineDect::~CMineDect()
 }
 
 HANDLE CMineDect::OpenProc(LPWSTR mineTitle)
-
 {
 	DWORD procId;
 	WCHAR info[128];
@@ -133,15 +133,14 @@ DWORD CMineDect::SweepMine()
 		CMinerAssistDlg::UpdateDbgInfo(info);
 		
 		////////////////////////TODO
-		
-		C_IPC ipc;
-		ipc.StartReadThrd();
+
+		m_ipc->StartReadThrd();
 	}
 	return 0;
 }
 
 
-
+// reserve
 DWORD CMineDect::ThreadIPC(LPVOID lpParameter)
 {
 	WCHAR info[128];

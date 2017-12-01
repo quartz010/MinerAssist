@@ -16,6 +16,7 @@ BOOL Click(DWORD x, DWORD y)
 	}
 	return 0;
 }
+
 DWORD ScanFiled()
 {
 	BYTE currBlock;

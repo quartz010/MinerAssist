@@ -17,7 +17,7 @@ public:
 
 
 	WORD ReadPipe();
-	WORD WritePipe();
+	WORD WritePipe(LPWSTR cmd);
 
 	BOOL StartReadThrd();
 
@@ -26,12 +26,12 @@ private:
 
 	HANDLE m_hPipe;
 	WCHAR m_dbgInfo[128];
-
+	CString m_cmd;
 	BOOL IsPipeConnected = FALSE;
 	BOOL IsPipeExist = FALSE;
 	
 	BOOL CheckPipe();
-	
+
 	static DWORD ReadThrd(ThrdPara* lpThrdPara);
 	
 	
