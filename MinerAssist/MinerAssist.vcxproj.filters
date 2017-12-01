@@ -31,6 +31,9 @@
     <Filter Include="Inject">
       <UniqueIdentifier>{df2ef208-fdc1-4095-87c8-500eec8cfe6c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="IPC">
+      <UniqueIdentifier>{dd70c07a-1764-4c4b-b6e3-04749a7ee83f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -54,6 +57,9 @@
     <ClInclude Include="Injection\InjectProc.h">
       <Filter>Inject</Filter>
     </ClInclude>
+    <ClInclude Include="C_IPC.h">
+      <Filter>IPC</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -70,6 +76,9 @@
     </ClCompile>
     <ClCompile Include="Injection\InjectProc.cpp">
       <Filter>Inject</Filter>
+    </ClCompile>
+    <ClCompile Include="C_IPC.cpp">
+      <Filter>IPC</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

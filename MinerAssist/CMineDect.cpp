@@ -2,6 +2,7 @@
 #include "CMineDect.h"
 #include "MinerAssistDlg.h"
 #include "Injection/InjectProc.h"
+#include "C_IPC.h"
 
 CMineDect::CMineDect()
 {
@@ -26,7 +27,7 @@ HANDLE CMineDect::OpenProc(LPWSTR mineTitle)
 		::GetWindowThreadProcessId(m_hWndMine, &procId);
 
 		wsprintf(info, L"[*] Find mine Proc PID : %d", procId);
-		UpdateDbgInfo(info);
+		CMinerAssistDlg::UpdateDbgInfo(info);
 
 		//打开进程句柄
 		HANDLE Process = ::OpenProcess(PROCESS_ALL_ACCESS, FALSE, procId);
@@ -35,7 +36,7 @@ HANDLE CMineDect::OpenProc(LPWSTR mineTitle)
 	else
 	{
 		wsprintf(info, L"[-] Find mine Proc Failed (IS THERE REALLY A WINMINE??)");
-		UpdateDbgInfo(info);
+		CMinerAssistDlg::UpdateDbgInfo(info);
 	}
 
 	return m_hProcMine;
@@ -53,13 +54,13 @@ BOOL CMineDect::GetWndSize()
 	//wsprintf(info, L"[*] Get field size %x x %x", m_offsetx, m_offsety);
 
 	wsprintf(info, L"[*] Get field size %d x %d ", m_sizex, m_sizey);
-	UpdateDbgInfo(info);
+	CMinerAssistDlg::UpdateDbgInfo(info);
 
 	//检测雷区大小是否合理(愚蠢的办法)
 	if (m_sizex < 0 || m_sizey < 0 || m_sizex > 100 || m_sizey >100)
 	{
 		wsprintf(info, L"[-] Get filed size Failed ");
-		UpdateDbgInfo(info);
+		CMinerAssistDlg::UpdateDbgInfo(info);
 		return FALSE;
 	}
 
@@ -101,7 +102,7 @@ DWORD CMineDect::SetFlag()
 	{
 		wsprintf(info, L"[!] No mine Remained  ");
 	}
-	UpdateDbgInfo(info);
+	CMinerAssistDlg::UpdateDbgInfo(info);
 
 	::InvalidateRect(m_hWndMine, NULL, TRUE);
 	::CloseHandle(m_hProcMine);
@@ -123,36 +124,18 @@ DWORD CMineDect::SweepMine()
 		WCHAR info[128];
 		errno = GetLastError();
 		wsprintf(info, L"[-] Inject mine Proc Failed : %d", errno);
-		UpdateDbgInfo(info);
+		CMinerAssistDlg::UpdateDbgInfo(info);
 	}
 	else
 	{
 		WCHAR info[128];
 		wsprintf(info, L"[+] Inject mine Proc Successfully ");
-		UpdateDbgInfo(info);
-		//下面等待 IPC 的消息
-
-		CString lpPipeName = L"\\\\.\\Pipe\\NamedPipe";
-
-		// 创建管道实例 实现与注入进程的IPC
-		HANDLE hPipe = CreateNamedPipe(lpPipeName, PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, \
-			PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, 1, 0, 0, 1000, NULL);
-		if (hPipe == INVALID_HANDLE_VALUE)
-		{
-			DWORD dwErrorCode = GetLastError();
-			wsprintf(info, L"[-] Create Pipe Failed : %d", dwErrorCode);
-			UpdateDbgInfo(info);
-
-			return -1;
-		}
-		else
-		{
-			wsprintf(info, L"[*] Create Pipe Successfully! waiting for IPC ");
-			UpdateDbgInfo(info);
-			//创建读管道线程
-			//CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadIPC, hPipe, 0, NULL);
-			ThreadIPC(hPipe);
-		}
+		CMinerAssistDlg::UpdateDbgInfo(info);
+		
+		////////////////////////TODO
+		
+		C_IPC ipc;
+		ipc.StartReadThrd();
 	}
 	return 0;
 }
@@ -162,7 +145,6 @@ DWORD CMineDect::SweepMine()
 DWORD CMineDect::ThreadIPC(LPVOID lpParameter)
 {
 	WCHAR info[128];
-
 	DWORD  nReadByte = 0, nWriteByte = 0, dwByte = 0;
 	WCHAR  szBuf[64];
 	DWORD ReadNum = 64;
@@ -170,7 +152,7 @@ DWORD CMineDect::ThreadIPC(LPVOID lpParameter)
 	HANDLE hPipe = (HANDLE)lpParameter;
 
 	wsprintf(info, L"[+] Create Listening Thread Successfully");
-	UpdateDbgInfo(info);
+	CMinerAssistDlg::UpdateDbgInfo(info);
 
 	//if (ConnectNamedPipe(hPipe, NULL) == FALSE) // 等待客户机的连接
 	//{
@@ -190,7 +172,7 @@ DWORD CMineDect::ThreadIPC(LPVOID lpParameter)
 	{
 		errno = GetLastError();
 		wsprintf(info, L"[!] Read Pipe Failed, exiting... : %d", errno);
-		UpdateDbgInfo(info);
+		CMinerAssistDlg::UpdateDbgInfo(info);
 		goto exit;
 	}
 	else
@@ -198,7 +180,7 @@ DWORD CMineDect::ThreadIPC(LPVOID lpParameter)
 		szBuf[ReadNum] = _T('\0'); // 显示接收到的信息
 		
 		wsprintf(info, L"[*] From IPC : %s , %d", szBuf, ReadNum);
-		UpdateDbgInfo(info);
+		CMinerAssistDlg::UpdateDbgInfo(info);
 	}
 	
 exit:
@@ -206,13 +188,6 @@ exit:
 	return 0;
 }
 
-DWORD CMineDect::UpdateDbgInfo(LPWSTR info)
-{
-	//发送消息
-
-	//MessageBoxA(NULL, info, "none", NULL);
-	return(::SendMessage(::AfxGetMainWnd()->m_hWnd, WM_MYMSG, (WPARAM)info, 0));
-}
 
 
 // reserve
@@ -227,14 +202,14 @@ DWORD CMineDect::UnInject()
 		WCHAR info[128];
 		errno = GetLastError();
 		wsprintf(info, L"[-] Unload module Proc Failed : %d", errno);
-		UpdateDbgInfo(info);
+		CMinerAssistDlg::UpdateDbgInfo(info);
 	}
 	else
 	{
 		WCHAR info[128];
 		errno = GetLastError();
 		wsprintf(info, L"[+] Unload module Proc Successfully : %d", errno);
-		UpdateDbgInfo(info);
+		CMinerAssistDlg::UpdateDbgInfo(info);
 	}
 	return 0;
 }

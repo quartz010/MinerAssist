@@ -21,11 +21,11 @@ public:
 
 
 	
+	//static DWORD UpdateDbgInfo(LPWSTR info);
 
 private:
 
 	static DWORD ThreadIPC(LPVOID lpParameter);
-	static DWORD UpdateDbgInfo(LPWSTR info);
 	//DWORD UpdateDbgInfo(const WCHAR * fmt, ...);
 
 	HANDLE m_hProcMine;

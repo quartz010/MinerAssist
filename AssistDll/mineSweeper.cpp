@@ -24,16 +24,16 @@ DWORD ScanFiled()
 //	MessageBox(NULL, info, L"Title", NULL);
 //	for (DWORD i = 0; i < (*offsetSizeY); i ++) 为什么这两句效果不一样???写晕了
 
-	for (DWORD i = 0; i < (*offsetSizeY) * 32; i += 32)
+	for (WORD i = 0; i < (*offsetSizeY) * 32; i += 32)
 	{
-		for (DWORD j = 0; j < (*offsetSizeX); j++)
+		for (WORD j = 0; j < (*offsetSizeX); j++)
 		{
 			currBlock = *(offsetFiledaddr + i + j);
 
 			if (currBlock != 0x8E && currBlock != 0x8F)       //判断是否有旗子 
 			{												//有雷有旗子 = 8E
 				//不要太快对吧 这样才有优化空间
-				//Sleep(10);
+				Sleep(10);
 				Click(i/32 + 1 , j+1);
 	
 			}
