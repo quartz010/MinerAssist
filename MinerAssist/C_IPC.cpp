@@ -16,7 +16,7 @@ C_IPC::C_IPC(CString pipeName) :
 
 	// 创建管道实例 实现与注入进程的IPC
 	m_hPipe = CreateNamedPipe(lpPipeName, PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, \
-		PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, 1, 0, 0, 1000, NULL);
+		PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, 1, 1024, 1024, 1000, NULL);
 	if (m_hPipe == INVALID_HANDLE_VALUE)
 	{
 		DWORD dwErrorCode = GetLastError();
@@ -149,7 +149,7 @@ BOOL C_IPC::StartReadThrd()
 DWORD  C_IPC::ReadThrd(ThrdPara* lpThrdPara)
 {
 	WCHAR dbgInfo[1024] = {0};
-	WCHAR buffer[1024]; // 数据缓存
+	WCHAR buffer[1024] = {0}; // 数据缓存
 	DWORD ReadNum;
 
 	HANDLE hPipe = lpThrdPara->hPipe;
@@ -171,7 +171,7 @@ DWORD  C_IPC::ReadThrd(ThrdPara* lpThrdPara)
 	//	wsprintf(dbgInfo, L"[+] Pipe Connect succeed!");
 	//	::SendMessage(hWnd, WM_MYMSG, (WPARAM)dbgInfo, 0);
 	//}
-	MessageBox(NULL, L"in", L"in" , NULL);
+
 	while (true)
 	{
 		// 从管道读取数据
@@ -184,8 +184,9 @@ DWORD  C_IPC::ReadThrd(ThrdPara* lpThrdPara)
 		}
 		else
 		{
-			buffer[ReadNum] = _T('\0');
-			wsprintf(dbgInfo, L"[*] IPC get : %s", buffer);
+			//buffer[ReadNum] = _T('\0');
+			
+			wsprintf(dbgInfo, L"[*] IPC gets : %s", buffer);
 			::SendMessage(hWnd, WM_MYMSG, (WPARAM)dbgInfo, 0);
 
 			if(0 ==  (wcscmp(buffer, L"exit")))
