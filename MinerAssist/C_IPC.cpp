@@ -1,5 +1,5 @@
-#include "stdafx.h"
 #include "C_IPC.h"
+#include "stdafx.h"
 #include "CMineDect.h"
 #include "MinerAssistDlg.h"
 

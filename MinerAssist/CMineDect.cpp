@@ -13,6 +13,7 @@ CMineDect::~CMineDect()
 {
 }
 
+// reserve
 HANDLE CMineDect::OpenProc(LPWSTR mineTitle)
 {
 	DWORD procId;
@@ -42,6 +43,7 @@ HANDLE CMineDect::OpenProc(LPWSTR mineTitle)
 	return m_hProcMine;
 }
 
+// reserve
 BOOL CMineDect::GetWndSize()
 {
 	//读内存偏移
@@ -68,7 +70,7 @@ BOOL CMineDect::GetWndSize()
 }
 
 
-//查雷, 立旗子
+//查雷, 立旗子 RESERVE
 DWORD CMineDect::SetFlag()
 {
 	//一个格子的数据
@@ -109,7 +111,8 @@ DWORD CMineDect::SetFlag()
 
 	return mineNum;
 }
-//排雷,
+
+//排雷,RESERVE
 DWORD CMineDect::SweepMine()
 {
 	//for dbg

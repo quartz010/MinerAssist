@@ -21,7 +21,10 @@
     <ClInclude Include="targetver.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="mineSweeper.h">
+    <ClInclude Include="AssistFunc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="IPC.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,7 +38,10 @@
     <ClCompile Include="dllmain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="mineSweeper.cpp">
+    <ClCompile Include="AssistFunc.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="IPC.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
