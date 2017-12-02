@@ -16,10 +16,11 @@ public:
 	//DWORD DectMine();
 	//²éÀ×
 	DWORD SetFlag();
+	//ÅÅÀ×
+	DWORD SweepMine();
 
 	DWORD UnInject();
 
-	BOOL InjectModule();
 
 	
 	C_IPC *m_ipc;
