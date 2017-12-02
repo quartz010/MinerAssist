@@ -1,4 +1,6 @@
 #pragma once
+#include "C_IPC.h"
+
 class CMineDect
 {
 public:
@@ -11,10 +13,24 @@ public:
 	
 	HANDLE OpenProc(LPWSTR mineTitle);
 	BOOL GetWndSize();
-	DWORD DectMine();
+	//DWORD DectMine();
+	//²éÀ×
+	DWORD SetFlag();
+
+	DWORD UnInject();
+
+	BOOL InjectModule();
+
+	
+	C_IPC *m_ipc;
+	//static DWORD UpdateDbgInfo(LPWSTR info);
 
 private:
-	
+
+	static DWORD ThreadIPC(LPVOID lpParameter);
+	//DWORD UpdateDbgInfo(const WCHAR * fmt, ...);
+
+
 	HANDLE m_hProcMine;
 	HWND m_hWndMine;
 
