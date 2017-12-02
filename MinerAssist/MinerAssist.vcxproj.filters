@@ -80,6 +80,12 @@
     <ClCompile Include="C_IPC.cpp">
       <Filter>IPC</Filter>
     </ClCompile>
+    <ClCompile Include="IPC\IPC_msgno_list.h">
+      <Filter>IPC</Filter>
+    </ClCompile>
+    <ClCompile Include="MinerAssistDlg2.cpp">
+      <Filter>UI\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MinerAssist.rc">

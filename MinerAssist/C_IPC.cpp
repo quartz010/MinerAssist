@@ -2,37 +2,14 @@
 #include "stdafx.h"
 #include "CMineDect.h"
 #include "MinerAssistDlg.h"
-
+#include "IPC_msgno_list.h"
 
 C_IPC::C_IPC(CString pipeName) :
 	m_hPipe(NULL),
 	IsPipeConnected(FALSE),
 	IsPipeExist(FALSE)
 {
-	//下面等待 IPC 的消息
-
-	//CString lpPipeName = L"\\\\.\\Pipe\\NamedPipe";
-	CString lpPipeName = pipeName;
-
-	// 创建管道实例 实现与注入进程的IPC
-	m_hPipe = CreateNamedPipe(lpPipeName, PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, \
-		PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, 1, 1024, 1024, 1000, NULL);
-	if (m_hPipe == INVALID_HANDLE_VALUE)
-	{
-		DWORD dwErrorCode = GetLastError();
-		wsprintf(m_dbgInfo, L"[-] Create Pipe Failed : %d", dwErrorCode);
-		CMinerAssistDlg::UpdateDbgInfo(m_dbgInfo);
-		return;
-	}
-	else
-	{
-		wsprintf(m_dbgInfo, L"[*] Create Pipe Successfully! waiting for IPC ");
-		CMinerAssistDlg::UpdateDbgInfo(m_dbgInfo);
-		IsPipeExist = TRUE;
-		//创建读管道线程
-		//CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ThreadIPC, hPipe, 0, NULL);
-		return;
-	}
+	
 }
 
 C_IPC::C_IPC():
@@ -40,7 +17,17 @@ C_IPC::C_IPC():
 	IsPipeConnected(FALSE),
 	IsPipeExist(FALSE)
 {
-	//下面等待 IPC 的消息
+
+
+
+}
+C_IPC::~C_IPC()
+{
+	//CloseHandle(m_hPipe);
+}
+
+HANDLE C_IPC::CrearePipe()
+{
 
 	LPWSTR lpPipeName = L"\\\\.\\Pipe\\NamedPipe";
 
@@ -52,15 +39,15 @@ C_IPC::C_IPC():
 		DWORD dwErrorCode = GetLastError();
 		wsprintf(m_dbgInfo, L"[-] Create Pipe Failed : %d", dwErrorCode);
 		//CMinerAssistDlg::UpdateDbgInfo(m_dbgInfo);
-		return;
+		return INVALID_HANDLE_VALUE;
 	}
 	else
 	{
-		wsprintf(m_dbgInfo, L"[*] Create Pipe Succeed! waiting for IPC : %x" , m_hPipe);
+		wsprintf(m_dbgInfo, L"[*] Create Pipe Succeed! waiting for IPC : %x", m_hPipe);
 		//CMinerAssistDlg::UpdateDbgInfo(m_dbgInfo);
 		IsPipeExist = TRUE;
-		
-		return;
+
+		return m_hPipe;
 	}
 
 	//if (ConnectNamedPipe(m_hPipe, NULL) == FALSE) // 等待客户机的连接
@@ -76,11 +63,6 @@ C_IPC::C_IPC():
 	//	CMinerAssistDlg::UpdateDbgInfo(m_dbgInfo);
 	//	IsPipeConnected = TRUE;
 	//}	
-
-}
-C_IPC::~C_IPC()
-{
-	//CloseHandle(m_hPipe);
 }
 
 WORD C_IPC::ReadPipe()
@@ -141,12 +123,14 @@ BOOL C_IPC::CheckPipe()
 BOOL C_IPC::StartReadThrd()
 {
 	WCHAR dbgInfo[1024];
+	CrearePipe();
 
 	ThrdPara thrdPara;
 	thrdPara.hPipe = m_hPipe;
 	thrdPara.hWnd = ::AfxGetMainWnd()->m_hWnd;
 	thrdPara.hWnd2 = ::AfxGetMainWnd()->m_hWnd;
 
+	IsPipeExist = TRUE;
 	
 	if (NULL == (CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ReadThrd, &thrdPara, NULL, 0)))
 	{
@@ -158,10 +142,10 @@ BOOL C_IPC::StartReadThrd()
 	else
 	{
 		//这里传入 mainwnd 的句柄 , 这样才能发消息给 dbg
-		wsprintf(m_dbgInfo, L"[+] Create Thread Succeed! 0x%x 0x%x", thrdPara.hWnd, thrdPara.hPipe);
+		wsprintf(m_dbgInfo, L"[+] Start Listening Thread 0x%x 0x%x", thrdPara.hWnd, thrdPara.hPipe);
 		CMinerAssistDlg::UpdateDbgInfo(m_dbgInfo);
 
-		Sleep(1000);
+		Sleep(100);
 		return TRUE;
 	}
 }
@@ -176,7 +160,7 @@ DWORD  C_IPC::ReadThrd(ThrdPara* lpThrdPara)
 	HWND hWnd = lpThrdPara->hWnd;
 	
 	wsprintf(dbgInfo, L"[+]0x%x 0x%x", hWnd, hPipe);
-	::SendMessage(hWnd, WM_MYMSG, (WPARAM)dbgInfo, 0);
+	::SendMessage(hWnd, WM_DBGMSG, (WPARAM)dbgInfo, 0);
 
 
 
@@ -185,24 +169,24 @@ DWORD  C_IPC::ReadThrd(ThrdPara* lpThrdPara)
 		// 从管道读取数据
 		if (ReadFile(hPipe, buffer, sizeof(buffer), &ReadNum, NULL) == FALSE)
 		{
-			wsprintf(dbgInfo, L"[!] Read Pipe Exception!");
-			::SendMessage(hWnd, WM_MYMSG, (WPARAM)dbgInfo, 0);
+			wsprintf(dbgInfo, L"[!] Read Pipe Exception! : %d" , GetLastError());
+			::SendMessage(hWnd, WM_DBGMSG, (WPARAM)dbgInfo, 0);
 
 			goto err_exit;
 		}
-		else
+		else if(ReadNum != 0)
 		{
-			//buffer[ReadNum] = _T('\0');
+			buffer[ReadNum] = _T('\0');
 			
 			wsprintf(dbgInfo, L"[*] IPC gets : %s", buffer);
-			::SendMessage(hWnd, WM_MYMSG, (WPARAM)dbgInfo, 0);
+			::SendMessage(hWnd, WM_DBGMSG, (WPARAM)dbgInfo, 0);
 
-			if(0 ==  (wcscmp(buffer, L"exit")))
+			if( 0 ==  (wcscmp(buffer, L"exit")))
 			{
 				//收到exit  (远程退出) 退出
-
+				buffer[5] = _T('\0');
 				wsprintf(dbgInfo, L"[!] Remote Exit");
-				::SendMessage(hWnd, WM_MYMSG, (WPARAM)dbgInfo, 0);
+				::SendMessage(hWnd, WM_DBGMSG, (WPARAM)dbgInfo, 0);
 				
 				goto err_exit;
 			}
@@ -211,8 +195,9 @@ DWORD  C_IPC::ReadThrd(ThrdPara* lpThrdPara)
 	return 1;
 
 err_exit:
-
+	
 	CloseHandle(hPipe); // 关闭管道句柄
+	::SendMessage(hWnd, WM_ERRMSG, (WPARAM)EM_REXIT, 0);
 	return -1;
 
 }

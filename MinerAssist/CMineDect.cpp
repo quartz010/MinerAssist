@@ -138,11 +138,15 @@ BOOL CMineDect::InjectModule()
 
 		////////////////////////TODO
 
-		m_ipc->StartReadThrd();
+		StartListenDbg();
 		return TRUE;
 	}
 }
-
+VOID CMineDect::StartListenDbg()
+{
+	m_ipc->StartReadThrd();
+	return;
+}
 
 // reserve
 DWORD CMineDect::ThreadIPC(LPVOID lpParameter)

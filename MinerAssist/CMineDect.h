@@ -21,6 +21,7 @@ public:
 
 	BOOL InjectModule();
 
+
 	
 	C_IPC *m_ipc;
 	//static DWORD UpdateDbgInfo(LPWSTR info);
@@ -28,6 +29,7 @@ public:
 private:
 
 	static DWORD ThreadIPC(LPVOID lpParameter);
+	VOID StartListenDbg();
 	//DWORD UpdateDbgInfo(const WCHAR * fmt, ...);
 
 

@@ -16,6 +16,7 @@ public:
 	~C_IPC();
 
 
+
 	WORD ReadPipe();
 	WORD WritePipe(LPWSTR cmd);
 
@@ -31,6 +32,7 @@ private:
 	BOOL IsPipeExist = FALSE;
 	
 	BOOL CheckPipe();
+	HANDLE CrearePipe();
 
 	static DWORD ReadThrd(ThrdPara* lpThrdPara);
 	

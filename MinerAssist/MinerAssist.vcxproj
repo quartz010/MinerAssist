@@ -93,6 +93,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)IPC\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -196,8 +197,10 @@
     <ClCompile Include="CMineDect.cpp" />
     <ClCompile Include="C_IPC.cpp" />
     <ClCompile Include="Injection\InjectProc.cpp" />
+    <ClCompile Include="IPC\IPC_msgno_list.h" />
     <ClCompile Include="MinerAssist.cpp" />
     <ClCompile Include="MinerAssistDlg.cpp" />
+    <ClCompile Include="MinerAssistDlg2.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

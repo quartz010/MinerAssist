@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "AssistFunc.h"
 #include "IPC.h"
+#include <map>
 
 CONST LPWORD offsetFnClick = (LPWORD)/*0x10037E1*/0x01003512;        //选方格的函数地址
 CONST LPBYTE offsetFiledaddr = (LPBYTE)0x1005361;
@@ -44,7 +45,7 @@ BOOL Click(DWORD x, DWORD y)
 	return 0;
 }
 
-DWORD ScanFiled()
+DWORD ScanFiled(INT a, INT b)
 {
 	BYTE currBlock;
 	WCHAR info[64];
@@ -99,7 +100,7 @@ BOOL GetWndSize()
 
 
 //查雷, 立旗子 
-DWORD SetFlag()
+DWORD SetFlag(INT a, INT b)
 {
 	//一个格子的数据
 	BYTE mineNum = 0;
@@ -139,3 +140,45 @@ DWORD SetFlag()
 
 	return mineNum;
 }
+
+DWORD test(INT a, INT b)
+{
+	MessageBox(NULL, L"OKOKOKOKO", NULL, MB_OK);
+	return 0;
+}
+
+
+//用map吧
+
+typedef DWORD(*LPMYFUNC)(INT wparam, INT lparam);
+
+//这里建立 函数 命令字典!!!
+//c++ 11 独有的
+
+std::map <LPWSTR, LPMYFUNC> funcMap = {
+	{ L"AutoTAP", NULL },
+	{ L"StopTime", NULL },
+	{ L"Kill", NULL },
+	{ L"HI", test},
+	{ L"ScanFiled", ScanFiled },
+	{ L"SetFlag", SetFlag }
+};
+//这里定义 字典的迭代器
+
+std::map<LPWSTR, LPMYFUNC>::iterator it;
+
+BOOL ExeCmd(LPWSTR fnName)
+{
+	//这里是关于迭代器的使用 //cpp 真tm 难用 都不及时补充基本类函数????
+	for (it = funcMap.begin(); it != funcMap.end(); it++)
+	{
+		LPWSTR tmp = it->first;
+
+		if (!wcscmp(tmp, fnName))		//这里迭代判断指令
+		{
+			return(it->second)(0, 0);		//对的上指令的就 调用函数
+		}
+	}
+	return FALSE;
+}
+
