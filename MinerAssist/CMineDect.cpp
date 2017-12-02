@@ -112,8 +112,8 @@ DWORD CMineDect::SetFlag()
 	return mineNum;
 }
 
-//ÅÅÀ×,RESERVE
-DWORD CMineDect::SweepMine()
+// ×¢Èë¼àÊÓDLL
+BOOL CMineDect::InjectModule()
 {
 	//for dbg
 	LPWSTR szBuffer = _T("G:\\Documents\\Visual Studio 2017\\Projects\\MinerAssist\\Debug\\AssistDll.dll");
@@ -126,20 +126,21 @@ DWORD CMineDect::SweepMine()
 	{
 		WCHAR info[128];
 		errno = GetLastError();
-		wsprintf(info, L"[-] Inject mine Proc Failed : %d", errno);
+		wsprintf(info, L"[-] Inject Module Failed : %d", errno);
 		CMinerAssistDlg::UpdateDbgInfo(info);
+		return FALSE;
 	}
 	else
 	{
 		WCHAR info[128];
-		wsprintf(info, L"[+] Inject mine Proc Successfully ");
+		wsprintf(info, L"[+] Inject Module Succeed ");
 		CMinerAssistDlg::UpdateDbgInfo(info);
-		
+
 		////////////////////////TODO
 
 		m_ipc->StartReadThrd();
+		return TRUE;
 	}
-	return 0;
 }
 
 
