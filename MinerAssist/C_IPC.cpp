@@ -38,13 +38,13 @@ HANDLE C_IPC::CrearePipe()
 	{
 		DWORD dwErrorCode = GetLastError();
 		wsprintf(m_dbgInfo, L"[-] Create Pipe Failed : %d", dwErrorCode);
-		//CMinerAssistDlg::UpdateDbgInfo(m_dbgInfo);
+		CMinerAssistDlg::UpdateDbgInfo(m_dbgInfo);
 		return INVALID_HANDLE_VALUE;
 	}
 	else
 	{
 		wsprintf(m_dbgInfo, L"[*] Create Pipe Succeed! waiting for IPC : %x", m_hPipe);
-		//CMinerAssistDlg::UpdateDbgInfo(m_dbgInfo);
+		CMinerAssistDlg::UpdateDbgInfo(m_dbgInfo);
 		IsPipeExist = TRUE;
 
 		return m_hPipe;
@@ -98,7 +98,7 @@ WORD C_IPC::WritePipe(LPWSTR cmd)
 	wsprintf(m_dbgInfo, L"[*] Local send : %s", m_cmd.GetString());
 	CMinerAssistDlg::UpdateDbgInfo(m_dbgInfo);
 
-	WriteFile(m_hPipe, m_cmd.GetString(), m_cmd.GetLength() * 2, &writeNum, NULL);
+	WriteFile(m_hPipe, m_cmd.GetString(), m_cmd.GetAllocLength()*2, &writeNum, NULL);
 
 	return WORD();
 }
@@ -122,8 +122,7 @@ BOOL C_IPC::CheckPipe()
 
 BOOL C_IPC::StartReadThrd()
 {
-	WCHAR dbgInfo[1024];
-	CrearePipe();
+ 	CrearePipe();
 
 	ThrdPara thrdPara;
 	thrdPara.hPipe = m_hPipe;
@@ -132,6 +131,7 @@ BOOL C_IPC::StartReadThrd()
 
 	IsPipeExist = TRUE;
 	
+	Sleep(500); //等会再read
 	if (NULL == (CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ReadThrd, &thrdPara, NULL, 0)))
 	{
 		wsprintf(m_dbgInfo, L"[-] Create Thread Failed!");
@@ -142,7 +142,7 @@ BOOL C_IPC::StartReadThrd()
 	else
 	{
 		//这里传入 mainwnd 的句柄 , 这样才能发消息给 dbg
-		wsprintf(m_dbgInfo, L"[+] Start Listening Thread 0x%x 0x%x", thrdPara.hWnd, thrdPara.hPipe);
+		wsprintf(m_dbgInfo, L"[+] Start Listening Thread");
 		CMinerAssistDlg::UpdateDbgInfo(m_dbgInfo);
 
 		Sleep(100);
@@ -152,44 +152,48 @@ BOOL C_IPC::StartReadThrd()
 
 DWORD  C_IPC::ReadThrd(ThrdPara* lpThrdPara)
 {
-	WCHAR dbgInfo[1024] = {0};
-	WCHAR buffer[1024] = {0}; // 数据缓存
+	WCHAR dbgInfo[128] = {0};
+
+	WCHAR szBuffer[128] = {0}; // 数据缓存
+	WCHAR exitStr[16] = { L"exit" };
 	DWORD ReadNum;
 
 	HANDLE hPipe = lpThrdPara->hPipe;
 	HWND hWnd = lpThrdPara->hWnd;
 	
-	wsprintf(dbgInfo, L"[+]0x%x 0x%x", hWnd, hPipe);
-	::SendMessage(hWnd, WM_DBGMSG, (WPARAM)dbgInfo, 0);
+	//wsprintf(dbgInfo, L"[+]0x%x 0x%x", hWnd, hPipe);
+	//::SendMessage(hWnd, WM_DBGMSG, (WPARAM)dbgInfo, 0);
 
 
 
 	while (true)
 	{
 		// 从管道读取数据
-		if (ReadFile(hPipe, buffer, sizeof(buffer), &ReadNum, NULL) == FALSE)
+		if (ReadFile(hPipe, szBuffer, sizeof(szBuffer), &ReadNum, NULL) == FALSE)
 		{
-			wsprintf(dbgInfo, L"[!] Read Pipe Exception! : %d" , GetLastError());
+			wsprintf(dbgInfo, L"[!] Read Pipe Exception! : %d, EXIT" , GetLastError());
 			::SendMessage(hWnd, WM_DBGMSG, (WPARAM)dbgInfo, 0);
 
 			goto err_exit;
 		}
 		else if(ReadNum != 0)
 		{
-			buffer[ReadNum] = _T('\0');
 			
-			wsprintf(dbgInfo, L"[*] IPC gets : %s", buffer);
+			wsprintf(dbgInfo, L"[*] IPC gets : %s , %d", szBuffer, ReadNum);
+			//给dbg窗口更新
 			::SendMessage(hWnd, WM_DBGMSG, (WPARAM)dbgInfo, 0);
-
-			if( 0 ==  (wcscmp(buffer, L"exit")))
+			
+			
+			//这里传入的字符比"exit"长, 就espxx了
+			if( 0 ==  (wcscmp(exitStr, szBuffer)))
 			{
 				//收到exit  (远程退出) 退出
-				buffer[5] = _T('\0');
 				wsprintf(dbgInfo, L"[!] Remote Exit");
 				::SendMessage(hWnd, WM_DBGMSG, (WPARAM)dbgInfo, 0);
-				
+
 				goto err_exit;
 			}
+			memset(szBuffer, 0, 128);
 		}
 	}
 	return 1;

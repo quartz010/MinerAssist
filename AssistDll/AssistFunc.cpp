@@ -50,8 +50,8 @@ DWORD ScanFiled(INT a, INT b)
 	BYTE currBlock;
 	WCHAR info[64];
 	wsprintf(info, L"%d x %d", *offsetSizeX, *offsetSizeY);
-//	MessageBox(NULL, info, L"Title", NULL);
-//	for (DWORD i = 0; i < (*offsetSizeY); i ++) 为什么这两句效果不一样???写晕了
+	DbgInfoPrint(info);
+	//	for (DWORD i = 0; i < (*offsetSizeY); i ++) 为什么这两句效果不一样???写晕了
 
 	for (WORD i = 0; i < (*offsetSizeY) * 32; i += 32)
 	{
