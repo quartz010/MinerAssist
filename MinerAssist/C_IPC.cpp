@@ -158,7 +158,7 @@ BOOL C_IPC::StartReadThrd()
 	else
 	{
 		//这里传入 mainwnd 的句柄 , 这样才能发消息给 dbg
-		wsprintf(m_dbgInfo, L"[+] Start Listening Thread 0x%x 0x%x", thrdPara.hWnd, thrdPara.hPipe);
+		wsprintf(m_dbgInfo, L"[+] Create Thread Succeed! 0x%x 0x%x", thrdPara.hWnd, thrdPara.hPipe);
 		CMinerAssistDlg::UpdateDbgInfo(m_dbgInfo);
 
 		Sleep(1000);
@@ -185,7 +185,7 @@ DWORD  C_IPC::ReadThrd(ThrdPara* lpThrdPara)
 		// 从管道读取数据
 		if (ReadFile(hPipe, buffer, sizeof(buffer), &ReadNum, NULL) == FALSE)
 		{
-			wsprintf(dbgInfo, L"[!] Read Pipe Exception! : %d" , GetLastError());
+			wsprintf(dbgInfo, L"[!] Read Pipe Exception!");
 			::SendMessage(hWnd, WM_MYMSG, (WPARAM)dbgInfo, 0);
 
 			goto err_exit;
