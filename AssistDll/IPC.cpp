@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "IPC.h"
+#include "AssistFunc.h"
 
 extern HANDLE g_hPipe;
 extern HMODULE g_hDll;
@@ -47,14 +48,7 @@ DWORD WINAPI reciveCmd(PVOID param)
 	g_hPipe = OpenPipe();
 	//ScanFiled();
 
-	for (size_t i = 0; i < 4; i++)
-	{
-		//Unicode 字节数问题,烦死了!!!
-		info = L"HELLO";
-		//WriteFile(g_hPipe, info.GetString(), 64, &writeNum, NULL);
-		DbgInfoPrint(info.GetBuffer());
-		Sleep(500);
-	}
+
 
 	//这里清空缓冲区,上面发送有点问题
 
@@ -62,22 +56,25 @@ DWORD WINAPI reciveCmd(PVOID param)
 
 
 	DWORD  nReadByte = 0, nWriteByte = 0, dwByte = 0;
-	WCHAR  szBuf[64];
+	WCHAR  szBuf[64] = {0};
 	DWORD ReadNum = 64;
-
-	// 从管道读取数据
-	if (ReadFile(g_hPipe, szBuf, sizeof(szBuf), &ReadNum, NULL) == FALSE)
+	while (true)
 	{
-		errno = GetLastError();
-		MessageBox(NULL, L"[!] Read Pipe Failed, exiting... ", L"Dll", NULL);
-		RemotExit();
-	}
-	else
-	{
-		Sleep(1000);
-		info = L"GOT!";
-		WriteFile(g_hPipe, info.GetString(), info.GetLength() * 2, &writeNum, NULL);
 
+		// 从管道读取数据
+		if (ReadFile(g_hPipe, szBuf, sizeof(szBuf), &ReadNum, NULL) == FALSE)
+		{
+			errno = GetLastError();
+			MessageBox(NULL, L"[!] Read Pipe Failed, exiting... ", L"Dll", NULL);
+			RemotExit();
+		}
+		else
+		{			
+			//wsprintf(info.GetBuffer(), L"GOT : %s", szBuf);
+			info = L"asdiniwqebidwqudbwqd";
+			ExeCmd(szBuf);
+			WriteFile(g_hPipe, info.GetString(), info.GetLength() * 2, &writeNum, NULL);
+		}
 	}
 	return 0;
 
